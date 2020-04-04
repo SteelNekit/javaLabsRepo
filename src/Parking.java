@@ -1,10 +1,15 @@
 import Utils.Utils;
-
-import java.util.ArrayList;
+import LinkedList.LinkedList;
+import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.Arrays;
+import java.util.ArrayList;
+/*Такая хуета потому что в утиле есть свой LinkedList
+И идея думает что вместо своего списка я хочу утильный
+Чтоб она дохуя не думала будет вот так */
 
-public class Parking {
+public class Parking implements Iterable<Floor>{
     private Floor[] floors;
     private int size;
 
@@ -64,8 +69,8 @@ public class Parking {
     }
 
     public Floor[] getFloors() {
-        trim();
         Floor[] buf = new Floor[size];
+        trim();
         for(int i = 0; i<size;i++){
             buf[i] = floors[i];
         }
@@ -73,17 +78,9 @@ public class Parking {
     }
 
     public Floor[] getSortedFloors(){
-        Floor[] buf = getFloors();
-        for(int i = 0; i<buf.length;i++){
-            for(int j = 0; j<buf.length-1;j++){
-                if(buf[j].getSize()>buf[j+1].getSize()){
-                    Floor anotherBuf = buf[j];
-                    buf[j] = buf[j+1];
-                    buf[j+1] = anotherBuf;
-                }
-            }
-        }
-        return buf;
+        Floor[] floors = getFloors();
+        Arrays.sort(floors);
+        return floors;
     }
 
     public Vehicle[] getVehicles(){
@@ -194,6 +191,34 @@ public class Parking {
                 forReturn[i] = bufList.get(i);
             }
             return forReturn;
+        }
+    }
+
+    @Override
+    public Iterator<Floor> iterator() {
+        return new FloorIterator(getFloors());
+    }
+
+    private class FloorIterator implements Iterator<Floor>{
+        private LinkedList<Floor> floors;
+
+        public FloorIterator(Floor[] floors){
+            this.floors = new LinkedList<Floor>(floors);
+        }
+
+        @Override
+        public boolean hasNext() {
+            return floors.getSize()>0;
+        }
+
+        @Override
+        public Floor next() {
+            return floors.get(0);
+        }
+
+        @Override
+        public void remove() {
+            floors.delete(0);
         }
     }
 }

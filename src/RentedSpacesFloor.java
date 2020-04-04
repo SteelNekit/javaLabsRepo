@@ -1,10 +1,11 @@
 import Exceptions.NoRentedSpaceException;
 import LinkedList.LinkedList;
 import Utils.Utils;
-
 import java.time.LocalDate;
+import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+
 
 public class RentedSpacesFloor implements Floor,Cloneable{
     private LinkedList<Space> spaces;
@@ -56,8 +57,8 @@ public class RentedSpacesFloor implements Floor,Cloneable{
     @Override
     public boolean hasSpace(String stateNumber) {
         Objects.requireNonNull(Utils.checkRegNumberFormat(stateNumber));
-        for(int i = 0; i<spaces.getSize();i++){
-            if(!spaces.get(i).isEmpty() && spaces.get(i).getVehicle().getStateNumber().equals(stateNumber)){
+        for(Space space:this){
+            if(!space.isEmpty() && space.getVehicle().getStateNumber().equals(stateNumber)){
                 return true;
             }
         }
@@ -122,9 +123,9 @@ public class RentedSpacesFloor implements Floor,Cloneable{
     public Space[] getTypesSpaces(VehicleTypes type) {
         Objects.requireNonNull(type);
         LinkedList<Space> bufList = new LinkedList<Space>();
-        for(int i = 0;i<spaces.getSize();i++){
-            if(spaces.get(i).getVehicle().getType() == type){
-                bufList.add(spaces.get(i));
+        for(Space space:this){
+            if(space.getVehicle().getType() == type){
+                bufList.add(space);
             }
         }
         Space[] forReturn = new Space[bufList.getSize()];
@@ -137,8 +138,8 @@ public class RentedSpacesFloor implements Floor,Cloneable{
     @Override
     public Space[] getFreeSpaces() {
         LinkedList<Space> bufList = new LinkedList<Space>();
-        for(int i = 0;i<spaces.getSize();i++){
-            if(spaces.get(i).isEmpty())bufList.add(spaces.get(i));
+        for(Space space:this){
+            if(space.isEmpty())bufList.add(space);
         }
         Space[] forReturn = new Space[bufList.getSize()];
         for(int i = 0; i<forReturn.length;i++){
@@ -150,12 +151,13 @@ public class RentedSpacesFloor implements Floor,Cloneable{
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("Rented spaces: \n");
-        for(int i = 0; i<spaces.getSize();i++){
-            sb.append(spaces.get(i).toString()).append('\n');
+        for(Space space:this){
+            sb.append(space.toString()).append('\n');
         }
         return sb.toString();
     }
 
+    //Сейчас смотрю на это пытаясь вспомнить логику, ебать, еслиб я это сам не писал я б не разобрался
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
@@ -173,8 +175,8 @@ public class RentedSpacesFloor implements Floor,Cloneable{
     @Override
     public int hashCode() {
         int hash = 53 * getSize();
-        for(int i = 0; i<getSize();i++){
-            hash*=spaces.get(i).hashCode();
+        for(Space space:this){
+            hash*=space.hashCode();
         }
         return hash;
     }
@@ -188,8 +190,8 @@ public class RentedSpacesFloor implements Floor,Cloneable{
     @Override
     public int countOfPersonsSpaces(Person person) {
         int count = 0;
-        for(int i = 0; i<getSize();i++){
-            if(spaces.get(i).getPerson().equals(person)) count++;
+        for(Space space:this){
+            if(space.getPerson().equals(person)) count++;
         }
         return count;
     }
@@ -202,9 +204,9 @@ public class RentedSpacesFloor implements Floor,Cloneable{
     public LocalDate nearestRentEndsDate() throws NoRentedSpaceException{
         checkRentedSpaces();
         LocalDate date = LocalDate.of(5000,0,0);
-        for(int i = 0;i<spaces.getSize();i++){
-            if(spaces.get(i) instanceof RentedSpace){
-                RentedSpace rs = (RentedSpace) spaces.get(i);
+        for(Space space:this){
+            if(space instanceof RentedSpace){
+                RentedSpace rs = (RentedSpace) space;
                 if(rs.getRentEndsDate().isBefore(date) &&
                 rs.getRentEndsDate().isAfter(LocalDate.now().minusDays(1))){}
                 date = rs.getRentEndsDate();
@@ -216,9 +218,9 @@ public class RentedSpacesFloor implements Floor,Cloneable{
     @Override
     public Space spaceWithNearestRentEndsDate() throws NoRentedSpaceException{
         LocalDate date = nearestRentEndsDate();
-        for(int i = 0;i<spaces.getSize();i++){
-            if(spaces.get(i) instanceof RentedSpace){
-                RentedSpace rs = (RentedSpace) spaces.get(i);
+        for(Space space:this){
+            if(space instanceof RentedSpace){
+                RentedSpace rs = (RentedSpace) space;
                 if(rs.getRentEndsDate().equals(date)) return rs;
             }
         }
@@ -227,9 +229,47 @@ public class RentedSpacesFloor implements Floor,Cloneable{
 
     private void checkRentedSpaces() throws NoRentedSpaceException{
         int rentedSpaceCount = 0;
-        for(int i = 0; i<spaces.getSize();i++){
-            if(spaces.get(i) instanceof RentedSpace) rentedSpaceCount++;
+        for(Space space:this){
+            if(space instanceof RentedSpace) rentedSpaceCount++;
         }
         if(rentedSpaceCount==0) throw new NoRentedSpaceException();
     }
+
+    @Override
+    public int compareTo(Floor floor) {
+        return this.getSize()-floor.getSize();
+    }
+
+    @Override
+    public SpaceIterator iterator() {
+        return new SpaceIterator(this.spaces);
+    }
+
+    //Такс, тут голове немножко тяжело, уточнить
+    private class SpaceIterator implements Iterator<Space>{
+        LinkedList<Space> spaces;
+
+        public SpaceIterator(LinkedList<Space> spaces){
+            this.spaces = spaces;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return spaces.getSize()>0;
+        }
+
+        @Override
+        public Space next() throws NoSuchElementException{
+            if(spaces.getSize()<=0) throw new NoSuchElementException("No such elements");
+            else{
+                return spaces.get(0);
+            }
+        }
+
+        @Override
+        public void remove() {
+            spaces.delete(0);
+        }
+    }
+
 }

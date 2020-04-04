@@ -2,7 +2,7 @@ import Exceptions.NoRentedSpaceException;
 
 import java.time.LocalDate;
 
-public interface Floor {
+public interface Floor extends Comparable<Floor>,Iterable<Space>{
     public boolean add(Space space);
     public boolean add(Space space, int index);
     public Space get(int index);
