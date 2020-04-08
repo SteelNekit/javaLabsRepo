@@ -1,10 +1,9 @@
 import Exceptions.NoRentedSpaceException;
 import LinkedList.LinkedList;
 import Utils.Utils;
+
 import java.time.LocalDate;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-import java.util.Objects;
+import java.util.*;
 
 public class OwnersFloor implements Floor,Cloneable{
     private Space[] spaces;
@@ -44,6 +43,68 @@ public class OwnersFloor implements Floor,Cloneable{
             if(space!=null && !space.isEmpty())count++;
         }
         return count;
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return size == 0;
+    }
+
+    @Override
+    public boolean contains(Object o) {
+        for(Space space:this){
+            if(space.equals((Space)o)) return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean remove(Object o) {
+        trim();
+        for(int i = 0; i<size;i++){
+            if(spaces[i].equals((Space)o)){
+                spaces[i] = null;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean addAll(Collection<? extends Space> collection) {
+        Iterator it =  collection.iterator();
+        /*Кстати пиздатая хурма с этим итератором
+        тут не форыч потому что мне охота потестить эту хурму*/
+        while(it.hasNext()){
+            this.add((Space)it.next());
+        }
+        return true;//Просто хз когда нужно возвращать ложь, по этому буду честен
+    }
+
+    @Override
+    public boolean removeAll(Collection<?> collection) {
+        Iterator it =  collection.iterator();
+        boolean flag = false;
+        while(it.hasNext()){
+            flag |= this.remove(it.next());
+        }
+        return flag;
+    }
+
+    @Override
+    public boolean containsAll(Collection<?> collection) {
+        Iterator it =  collection.iterator();
+        boolean flag = true;
+        while(it.hasNext()){
+            flag &= this.contains(it.next());
+        }
+        return flag;
+    }
+
+    @Override
+    public void clear() {
+        spaces = new Space[16];
+        size = 0;
     }
 
     public boolean add(Space space){
@@ -107,43 +168,38 @@ public class OwnersFloor implements Floor,Cloneable{
         return forReturn;
     }
 
-    public Space delete(int index){
+    public Space remove(int index){
         Space forReturn = spaces[index];
         spaces[index] = null;
         size--;
         return forReturn;
     }
 
-    public Space delete(String stateNumber){
-        Space forReturn = get(Objects.requireNonNull(Utils.checkRegNumberFormat(stateNumber)));
-        for(int i = 0; i<spaces.length;i++){
-            if(spaces[i].getVehicle().getStateNumber().equals(stateNumber)){
-                spaces[i] = null;
-                return forReturn;
-            }
-        }
-        throw new NoSuchElementException();
-    }
-
-    @Override
-    public boolean delete(Space space) {
-        Objects.requireNonNull(space);
-        for(int i = 0; i<spaces.length;i++){
-            if(spaces[i].equals(space)){
-                spaces[i] = null;
-                size--;
-                return true;
-            }
-        }
-        throw new NoSuchElementException();
-    }
-
-    public int getSize() {
+    public int size() {
         return size;
     }
 
-    //Не уверен что эту хуету можно теперь тронуть, но нужно будет об этом спросить
-    public Space[] getSpaces(){
+    //todo Спросить что эта хуета должна делать
+    @Override
+    public <T> T[] toArray(T[] ts) {
+        return null;
+    }
+
+    @Override
+    public boolean retainAll(Collection<?> collection) {
+        trim();
+        boolean flag = false;
+        for(int i = 0; i<size;i++){
+            if(!collection.contains(spaces[i])){
+                remove(i);
+                flag |= true;
+            }
+        }
+        return flag;
+    }
+
+    @Override
+    public Space[] toArray(){
         Space[] forReturn = new Space[size];
         trim();
         for(int i = 0; i<forReturn.length;i++){
@@ -152,34 +208,33 @@ public class OwnersFloor implements Floor,Cloneable{
         return forReturn;
     }
 
-    public Vehicle[] getVehicles(){
-        Space[] spaces = getSpaces();
-        Vehicle[] forReturn = new Vehicle[size];
-        for(int i = 0; i<forReturn.length;i++){
-            forReturn[i] = spaces[i].getVehicle();
+    public Collection<Vehicle> getVehicles(){
+        Space[] spaces = toArray();
+        ArrayList<Vehicle> forReturn = new ArrayList<>();
+        for(Space space: spaces){
+            forReturn.add(space.getVehicle());
         }
         return forReturn;
     }
 
     @Override
-    public Space[] getTypesSpaces(VehicleTypes type) {
+    public List<Space> getTypesSpaces(VehicleTypes type) {
         Objects.requireNonNull(type);
-        Space[] forReturn = new Space[getCountOfTypedVehicle(type)];
-        int i = 0;
+        ArrayList<Space> forReturn = new ArrayList<Space>();
         for(Space space:spaces){
             if(space.getVehicle().getType() == type){
-                forReturn[i++] = space;
+                forReturn.add(space);
             }
         }
         return forReturn;
     }
 
     @Override
-    public Space[] getFreeSpaces() {
-        Space[] forReturn = new Space[getCountOfFreeSpace()];
+    public Deque<Space> getFreeSpaces() {
+        java.util.LinkedList<Space> forReturn = new java.util.LinkedList<Space>();
         int i = 0;
         for(Space space: spaces){
-            if(space == null || space.isEmpty())forReturn[i++] = space;
+            if(space == null || space.isEmpty()) forReturn.add(space);
         }
         return forReturn;
     }
@@ -201,10 +256,10 @@ public class OwnersFloor implements Floor,Cloneable{
         if (this == obj) return true;
         if (obj == null || getClass() != obj.getClass()) return false;
         OwnersFloor that = (OwnersFloor) obj;
-        boolean answer = that.getSize() == this.getSize();
+        boolean answer = that.size() == this.size();
         if(answer){
-            for(int i = 0; i<getSize();i++){
-                answer &= (that.getSpaces()[i].equals(this.getSpaces()[i]));
+            for(int i = 0; i< size(); i++){
+                answer &= (that.toArray()[i].equals(this.toArray()[i]));
             }
         }
         return answer;
@@ -212,7 +267,7 @@ public class OwnersFloor implements Floor,Cloneable{
 
     @Override
     public int hashCode() {
-        int hash = 71 * getSize();
+        int hash = 71 * size();
         for(int i = 0; i<size;i++){
             if(spaces[i]!=null)
             hash*=spaces[i].hashCode();
@@ -318,12 +373,12 @@ public class OwnersFloor implements Floor,Cloneable{
 
     @Override
     public int compareTo(Floor floor) {
-        return this.getSize()-floor.getSize();
+        return this.size()-floor.size();
     }
 
     @Override
     public Iterator<Space> iterator() {
-        return new SpaceIterator(getSpaces());
+        return new SpaceIterator(toArray());
     }
 
     private class SpaceIterator implements Iterator<Space>{

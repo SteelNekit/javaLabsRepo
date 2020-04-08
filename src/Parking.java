@@ -1,10 +1,8 @@
 import Utils.Utils;
 import LinkedList.LinkedList;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-import java.util.Objects;
-import java.util.Arrays;
-import java.util.ArrayList;
+
+import java.lang.reflect.Array;
+import java.util.*;
 /*Такая хуета потому что в утиле есть свой LinkedList
 И идея думает что вместо своего списка я хочу утильный
 Чтоб она дохуя не думала будет вот так */
@@ -77,22 +75,28 @@ public class Parking implements Iterable<Floor>{
         return buf;
     }
 
-    public Floor[] getSortedFloors(){
-        Floor[] floors = getFloors();
-        Arrays.sort(floors);
+    public List<Floor> getSortedFloors(){
+        ArrayList<Floor> floors = new ArrayList<>();
+        for(Floor floor:getFloors()){
+            floors.add(floor);
+        }
+        for(int i = 0; i<floors.size();i++){
+            for(int j = 0;j<floors.size()-1;i++){
+                if(floors.get(j).size()>floors.get(j+1).size()){
+                    Floor c = floors.set(j,floors.get(j+1));
+                    floors.set(j+1,c);
+                }
+            }
+        }
         return floors;
     }
 
-    public Vehicle[] getVehicles(){
-        int vehiclesCount = 0;
+    public Collection<Vehicle> getVehicles(){
+        ArrayList<Vehicle> cars = new ArrayList<>();
         for(Floor floor: floors){
-            vehiclesCount+= floor.getVehicles().length;
+            cars.addAll(floor.getVehicles());
         }
-        Vehicle[] forReturn = new Vehicle[vehiclesCount];
-        for(Floor floor: floors){
-            Tools.wiseAdd(floor.getVehicles(),forReturn);
-        }
-        return forReturn;
+        return cars;
     }
 
     public Space getSpace(String stateNumber){
@@ -109,7 +113,7 @@ public class Parking implements Iterable<Floor>{
         Objects.requireNonNull(Utils.checkRegNumberFormat(stateNumber));
         Space forReturn = getSpace(stateNumber);
         for(int i = 0; i< floors.length; i++){
-            floors[i].delete(stateNumber);
+            floors[i].remove(stateNumber);
         }
         return forReturn;
     }
@@ -117,7 +121,7 @@ public class Parking implements Iterable<Floor>{
     public int getCountOfFreeSpaces(){
         int count = 0;
         for(Floor floor: floors){
-            count+=floor.getFreeSpaces().length;
+            count+=floor.getFreeSpaces().size();
         }
         return count;
     }
@@ -126,7 +130,7 @@ public class Parking implements Iterable<Floor>{
         Objects.requireNonNull(type);
         int count = 0;
         for(Floor floor: floors){
-            count+=floor.getTypesSpaces(type).length;
+            count+=floor.getTypesSpaces(type).size();
         }
         return count;
     }
@@ -177,21 +181,13 @@ public class Parking implements Iterable<Floor>{
         return sb.toString();
     }
 
-    public Floor[] getFloorWithPersonsSpace(Person person){
+    public Set<Floor> getFloorWithPersonsSpace(Person person){
         Objects.requireNonNull(person);
-        ArrayList<Floor> bufList = new ArrayList<>();
-        Floor[] bufArray = getFloors();
-        for(int i = 0; i<bufArray.length;i++){
-            if(bufArray[i].countOfPersonsSpaces(person)!=0) bufList.add(bufArray[i]);
+        HashSet<Floor> forReturn = new HashSet<>();
+        for(Floor floor: floors){
+            if(floor.countOfPersonsSpaces(person)!=0) forReturn.add(floor);
         }
-        if(bufList.size()==0) return null;
-        else{
-            Floor[] forReturn = new Floor[bufList.size()];
-            for(int i = 0; i<forReturn.length;i++){
-                forReturn[i] = bufList.get(i);
-            }
-            return forReturn;
-        }
+        return forReturn;
     }
 
     @Override

@@ -1,24 +1,22 @@
 import Exceptions.NoRentedSpaceException;
 
 import java.time.LocalDate;
+import java.util.Collection;
+import java.util.Deque;
+import java.util.List;
 
-public interface Floor extends Comparable<Floor>,Iterable<Space>{
+public interface Floor extends Comparable<Floor>,Iterable<Space>, Collection<Space> {
     public boolean add(Space space);
     public boolean add(Space space, int index);
     public Space get(int index);
     public Space get(String stateNumber);
-    public int getSize();
     public boolean hasSpace(String stateNumber);
     public Space set(Space space, int index);
-    public Space delete(int index);
-    public boolean delete(Space space);
     public int indexOf(Space space);
     public int countOfPersonsSpaces(Person person);
-    public Space delete(String stateNumber);
-    public Space[] getSpaces();
-    public Vehicle[] getVehicles();
-    public Space[] getTypesSpaces(VehicleTypes type);
-    public Space[] getFreeSpaces();
+    public Collection<Vehicle> getVehicles();
+    public List<Space> getTypesSpaces(VehicleTypes type);
+    public Deque<Space> getFreeSpaces();
     public int hashCode();
     public String toString();
     public Object clone() throws CloneNotSupportedException;

@@ -2,9 +2,7 @@ import Exceptions.NoRentedSpaceException;
 import LinkedList.LinkedList;
 import Utils.Utils;
 import java.time.LocalDate;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-import java.util.Objects;
+import java.util.*;
 
 
 public class RentedSpacesFloor implements Floor,Cloneable{
@@ -50,7 +48,7 @@ public class RentedSpacesFloor implements Floor,Cloneable{
     }
 
     @Override
-    public int getSize() {
+    public int size() {
         return spaces.getSize();
     }
 
@@ -71,13 +69,82 @@ public class RentedSpacesFloor implements Floor,Cloneable{
         return spaces.set(space,index);
     }
 
-    @Override
-    public Space delete(int index) {
+    public Space remove(int index) {
         return spaces.delete(index);
     }
 
     @Override
-    public Space delete(String stateNumber) {
+    public boolean remove(Object o) {
+        if(this.contains(o)){
+            spaces.delete((Space)o);
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    @Override
+    public boolean contains(Object o) {
+        return spaces.indexOf((Space)o)>-1;
+    }
+
+    @Override
+    public void clear() {
+        spaces = new LinkedList<Space>();
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return spaces.getSize()<=0;
+    }
+
+    //todo Аналогично
+    @Override
+    public <T> T[] toArray(T[] ts) {
+        return null;
+    }
+
+    @Override
+    public boolean containsAll(Collection<?> collection) {
+        for (Space space:this){
+            if(!collection.contains(space)) return false;
+        }
+        return true;
+    }
+
+    @Override
+    public boolean addAll(Collection<? extends Space> collection) {
+        for(Space space:collection){
+            this.add(space);
+        }
+        return true;
+    }
+
+    @Override
+    public boolean removeAll(Collection<?> collection) {
+        boolean flag = false;
+        for(Space space:this){
+            if(collection.contains(space)){
+                remove(space);
+                flag|=true;
+            }
+        }
+        return flag;
+    }
+
+    @Override
+    public boolean retainAll(Collection<?> collection) {
+        boolean flag = false;
+        for(int i = 0; i<size();i++){
+            if(!collection.contains(spaces.get(i))){
+                remove(i);
+                flag |= true;
+            }
+        }
+        return flag;
+    }
+
+    public Space remove(String stateNumber) {
         Space forReturn = get(Objects.requireNonNull(Utils.checkRegNumberFormat(stateNumber)));
         for(int i = 0; i<spaces.getSize();i++){
             if(spaces.get(i).getVehicle().getStateNumber().equals(stateNumber)){
@@ -88,8 +155,7 @@ public class RentedSpacesFloor implements Floor,Cloneable{
         throw new NoSuchElementException();
     }
 
-    @Override
-    public boolean delete(Space space) {
+    public boolean remove(Space space) {
         Objects.requireNonNull(space);
         for(int i = 0; i<spaces.getSize();i++){
             if(spaces.get(i).equals(space)){
@@ -101,7 +167,7 @@ public class RentedSpacesFloor implements Floor,Cloneable{
     }
 
     @Override
-    public Space[] getSpaces() {//В целом уёбищный метод
+    public Space[] toArray() {//В целом уёбищный метод
         Space[] forReturn = new Space[spaces.getSize()];
         for(int i = 0; i<spaces.getSize();i++){
             forReturn[i] = spaces.get(i);
@@ -110,27 +176,23 @@ public class RentedSpacesFloor implements Floor,Cloneable{
     }
 
     @Override
-    public Vehicle[] getVehicles() {
-        Space[] spaces = getSpaces();
-        Vehicle[] forReturn = new Vehicle[spaces.length];
-        for(int i = 0; i<forReturn.length;i++){
-            forReturn[i] = spaces[i].getVehicle();
+    public ArrayList<Vehicle> getVehicles() {
+        Space[] spaces = toArray();
+        ArrayList<Vehicle> forReturn = new ArrayList<>();
+        for(Space space: spaces){
+            forReturn.add(space.getVehicle());
         }
         return forReturn;
     }
 
     @Override
-    public Space[] getTypesSpaces(VehicleTypes type) {
+    public ArrayList<Space> getTypesSpaces(VehicleTypes type) {
         Objects.requireNonNull(type);
-        LinkedList<Space> bufList = new LinkedList<Space>();
+        ArrayList<Space> forReturn = new ArrayList<Space>();
         for(Space space:this){
             if(space.getVehicle().getType() == type){
-                bufList.add(space);
+                forReturn.add(space);
             }
-        }
-        Space[] forReturn = new Space[bufList.getSize()];
-        for(int i = 0; i<forReturn.length;i++){
-            forReturn[i] = bufList.get(i);
         }
         return forReturn;
     }
@@ -163,10 +225,10 @@ public class RentedSpacesFloor implements Floor,Cloneable{
         if (this == obj) return true;
         if (obj == null || getClass() != obj.getClass()) return false;
         RentedSpacesFloor that = (RentedSpacesFloor) obj;
-        boolean answer = that.getSize() == this.getSize();
+        boolean answer = that.size() == this.size();
         if(answer){
-            for(int i = 0; i<getSize();i++){
-                answer &= (that.getSpaces()[i].equals(this.getSpaces()[i]));
+            for(int i = 0; i<size();i++){
+                answer &= (that.toArray()[i].equals(this.toArray()[i]));
             }
         }
         return answer;
@@ -174,7 +236,7 @@ public class RentedSpacesFloor implements Floor,Cloneable{
 
     @Override
     public int hashCode() {
-        int hash = 53 * getSize();
+        int hash = 53 * size();
         for(Space space:this){
             hash*=space.hashCode();
         }
@@ -197,7 +259,7 @@ public class RentedSpacesFloor implements Floor,Cloneable{
     }
 
     public Object clone() throws CloneNotSupportedException{
-        return new RentedSpacesFloor(getSpaces().clone());
+        return new RentedSpacesFloor(toArray().clone());
     }
 
     @Override
@@ -237,7 +299,7 @@ public class RentedSpacesFloor implements Floor,Cloneable{
 
     @Override
     public int compareTo(Floor floor) {
-        return this.getSize()-floor.getSize();
+        return this.size()-floor.size();
     }
 
     @Override
