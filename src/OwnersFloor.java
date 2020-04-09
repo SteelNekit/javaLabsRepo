@@ -182,7 +182,19 @@ public class OwnersFloor implements Floor,Cloneable{
     //todo Спросить что эта хуета должна делать
     @Override
     public <T> T[] toArray(T[] ts) {
-        return null;
+        Space[] buf = toArray();
+        int startIndex = 0;
+        for(int i = 0; i<ts.length;i++){
+            if(ts[i]==null){
+                startIndex = i;
+                break;
+            }
+        }
+        for(int i = 0;i<ts.length;i++){
+            ts[i+startIndex] = (T) buf[i];
+        }
+        return ts;
+        //Сделал так чтобы выходные данные можно было получить и из параметров из на выходе метода
     }
 
     @Override

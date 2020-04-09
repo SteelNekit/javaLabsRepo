@@ -101,7 +101,18 @@ public class RentedSpacesFloor implements Floor,Cloneable{
     //todo Аналогично
     @Override
     public <T> T[] toArray(T[] ts) {
-        return null;
+        Space[] buf = toArray();
+        int startIndex = 0;
+        for(int i = 0; i<ts.length;i++){
+            if(ts[i]==null){
+                startIndex = i;
+                break;
+            }
+        }
+        for(int i = 0;i<ts.length;i++){
+            ts[i+startIndex] = (T) buf[i];
+        }
+        return ts;
     }
 
     @Override
@@ -198,14 +209,11 @@ public class RentedSpacesFloor implements Floor,Cloneable{
     }
 
     @Override
-    public Space[] getFreeSpaces() {
-        LinkedList<Space> bufList = new LinkedList<Space>();
-        for(Space space:this){
-            if(space.isEmpty())bufList.add(space);
-        }
-        Space[] forReturn = new Space[bufList.getSize()];
-        for(int i = 0; i<forReturn.length;i++){
-            forReturn[i] = bufList.get(i);
+    public Deque<Space> getFreeSpaces() {
+        java.util.LinkedList<Space> forReturn = new java.util.LinkedList<Space>();
+        int i = 0;
+        for(Space space: this){
+            if(space == null || space.isEmpty()) forReturn.add(space);
         }
         return forReturn;
     }
