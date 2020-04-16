@@ -98,21 +98,16 @@ public class RentedSpacesFloor implements Floor,Cloneable{
         return spaces.getSize()<=0;
     }
 
-    //todo Аналогично
     @Override
     public <T> T[] toArray(T[] ts) {
-        Space[] buf = toArray();
-        int startIndex = 0;
-        for(int i = 0; i<ts.length;i++){
-            if(ts[i]==null){
-                startIndex = i;
-                break;
-            }
+        Space[] buf = new Space[size()+ts.length];
+        for(int i = 0;i<size();i++){
+            buf[i] = spaces.get(i);
         }
         for(int i = 0;i<ts.length;i++){
-            ts[i+startIndex] = (T) buf[i];
+            buf[size()+i] = (Space)ts[i];
         }
-        return ts;
+        return (T[]) buf;
     }
 
     @Override
@@ -137,7 +132,7 @@ public class RentedSpacesFloor implements Floor,Cloneable{
         for(Space space:this){
             if(collection.contains(space)){
                 remove(space);
-                flag|=true;
+                flag=true;
             }
         }
         return flag;
@@ -149,7 +144,7 @@ public class RentedSpacesFloor implements Floor,Cloneable{
         for(int i = 0; i<size();i++){
             if(!collection.contains(spaces.get(i))){
                 remove(i);
-                flag |= true;
+                flag = true;
             }
         }
         return flag;
@@ -199,7 +194,7 @@ public class RentedSpacesFloor implements Floor,Cloneable{
     @Override
     public ArrayList<Space> getTypesSpaces(VehicleTypes type) {
         Objects.requireNonNull(type);
-        ArrayList<Space> forReturn = new ArrayList<Space>();
+        ArrayList<Space> forReturn = new ArrayList<>();
         for(Space space:this){
             if(space.getVehicle().getType() == type){
                 forReturn.add(space);

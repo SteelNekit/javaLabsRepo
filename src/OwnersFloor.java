@@ -22,18 +22,13 @@ public class OwnersFloor implements Floor,Cloneable{
     public OwnersFloor(Space[] spaces) {
         Objects.requireNonNull(spaces);
         this.spaces = new Space[spaces.length];
-        for(int i = 0; i<this.spaces.length;i++){
-            this.spaces[i] = spaces[i];
-        }
-
+        System.arraycopy(spaces, 0, this.spaces, 0, this.spaces.length);
         size = checkPlacedSpaces(spaces);
     }
 
     private void extend(){
         Space[] newSpaces = new Space[spaces.length*2];
-        for(int i=0;i<spaces.length;i++){
-            newSpaces[i] = spaces[i];
-        }
+        System.arraycopy(spaces, 0, newSpaces, 0, spaces.length);
         spaces = newSpaces;
     }
 
@@ -51,18 +46,18 @@ public class OwnersFloor implements Floor,Cloneable{
     }
 
     @Override
-    public boolean contains(Object o) {
+    public boolean contains(Object obj) {
         for(Space space:this){
-            if(space.equals((Space)o)) return true;
+            if(space.equals(obj)) return true;
         }
         return false;
     }
 
     @Override
-    public boolean remove(Object o) {
+    public boolean remove(Object obj) {
         trim();
         for(int i = 0; i<size;i++){
-            if(spaces[i].equals((Space)o)){
+            if(spaces[i].equals(obj)){
                 spaces[i] = null;
                 return true;
             }
@@ -179,7 +174,6 @@ public class OwnersFloor implements Floor,Cloneable{
         return size;
     }
 
-    //todo Спросить что эта хуета должна делать
     @Override
     public <T> T[] toArray(T[] ts) {
         Space[] buf = toArray();
@@ -194,7 +188,6 @@ public class OwnersFloor implements Floor,Cloneable{
             ts[i+startIndex] = (T) buf[i];
         }
         return ts;
-        //Сделал так чтобы выходные данные можно было получить и из параметров из на выходе метода
     }
 
     @Override
@@ -204,7 +197,7 @@ public class OwnersFloor implements Floor,Cloneable{
         for(int i = 0; i<size;i++){
             if(!collection.contains(spaces[i])){
                 remove(i);
-                flag |= true;
+                flag = true;
             }
         }
         return flag;
@@ -214,9 +207,7 @@ public class OwnersFloor implements Floor,Cloneable{
     public Space[] toArray(){
         Space[] forReturn = new Space[size];
         trim();
-        for(int i = 0; i<forReturn.length;i++){
-            forReturn[i] = spaces[i];
-        }
+        System.arraycopy(spaces, 0, forReturn, 0, forReturn.length);
         return forReturn;
     }
 
@@ -232,7 +223,7 @@ public class OwnersFloor implements Floor,Cloneable{
     @Override
     public List<Space> getTypesSpaces(VehicleTypes type) {
         Objects.requireNonNull(type);
-        ArrayList<Space> forReturn = new ArrayList<Space>();
+        ArrayList<Space> forReturn = new ArrayList<>();
         for(Space space:spaces){
             if(space.getVehicle().getType() == type){
                 forReturn.add(space);
@@ -243,8 +234,7 @@ public class OwnersFloor implements Floor,Cloneable{
 
     @Override
     public Deque<Space> getFreeSpaces() {
-        java.util.LinkedList<Space> forReturn = new java.util.LinkedList<Space>();
-        int i = 0;
+        java.util.LinkedList<Space> forReturn = new java.util.LinkedList<>();
         for(Space space: spaces){
             if(space == null || space.isEmpty()) forReturn.add(space);
         }
@@ -257,7 +247,7 @@ public class OwnersFloor implements Floor,Cloneable{
         for(int i = 0; i<size;i++){
             if(spaces[i]!=null) sb.append(spaces[i].toString()).append('\n');
             else{
-                sb.append("Тут также путо как в твоей душе");
+                sb.append("Тут также пусто как в твоей душе");
             }
         }
         return sb.toString();
@@ -356,8 +346,9 @@ public class OwnersFloor implements Floor,Cloneable{
             if(space instanceof RentedSpace){
                 RentedSpace rs = (RentedSpace) space;
                 if(rs.getRentEndsDate().isBefore(date) &&
-                        rs.getRentEndsDate().isAfter(LocalDate.now().minusDays(1))){}
-                date = rs.getRentEndsDate();
+                        rs.getRentEndsDate().isAfter(LocalDate.now().minusDays(1))){
+                    date = rs.getRentEndsDate();
+                }
             }
         }
         return date;
